@@ -49,6 +49,10 @@ const routes=[
             }
         ]
     },
+    {
+        path:'/echarts',
+        component:()=>import('../views/echarts.vue')
+    },
     
 ]
 const router=createRouter({

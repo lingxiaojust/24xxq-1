@@ -1,7 +1,8 @@
 <script setup>
-    import { reactive,ref} from 'vue';
+    import { reactive,ref,computed,onMounted} from 'vue';
     import { storeToRefs } from 'pinia';
     import { useUserStore } from '../store/user';
+    import * as echarts from 'echarts';
     // import { userOutlined,InfoCircleOutlined} from '@ant-design-vue/icons-vue'
     const userStore = useUserStore();
     const {userlist} =storeToRefs(userStore)
@@ -9,11 +10,45 @@
     
     let showFlag=ref(false);
     let IsEdit=ref(false);//默认新增
-    let stuNum=ref(0);
+    let editIndex=ref(-1);
+    const formState = reactive({
+        username: '',
+        password: '',
+        remember: true,
+    });
+    let stuNum=ref('0');
     let name=ref("");
     let age=ref(0);
     let curtIndex=ref(0);
+    const chart=ref(null);
 
+    onMounted(()=>{
+        // const myChart =echarts.init(document.querySelector('.base-chart-box'));
+        const myChart=echarts.init(chart.value);
+        myChart.setOption({
+        title: {
+            text: '年龄图表',
+        },
+        tooltip: {},
+        xAxis: {
+            data: userStore.userlist.map(item=>{
+                return item.name;
+            }),
+        },
+        yAxis: {
+            type:'value'
+        },
+        series: [
+            {
+            name: '年龄',
+            type: 'bar',
+            data: userStore.userlist.map(item=>{
+                return item.age;
+            }),
+            },
+        ]
+        })
+    })
     const delbtn=index=>{
         userStore.userlist.splice(index,1);
     }
@@ -23,7 +58,14 @@
         showFlag.value=true;
 
     }
-
+    const studentlist=computed(()=>{
+        return userStore.userlist.map((item,index)=>{
+            return{
+                no:index+1,
+                ...item
+            }
+        })
+    })
     const editbtn=index=>{
         const item=userStore.userlist[index];
         // item.age=22;
@@ -53,11 +95,11 @@
         let total=0;
         userStore.userlist.map(item =>{
             if(item.name.indexOf(name)!==-1){
-                let template=item;
-                let templatename=template.name.split('')
-                templatename.splice(0,name.length)
-                let IsStuNumCheck=IsNumber(templatename.join(''));
-                if(templatename.length===0 || IsStuNumCheck){
+                let tempItem=item
+                let tempItemName=tempItem.userName.split('')
+                tempItemName.splice(0,name.length)
+                let IsStuNumCheck=IsNumber(tempItemName.join(''));
+                if(tempItemName.length===0 || IsStuNumCheck){
                     total++;
                 } 
             }
@@ -82,7 +124,7 @@
         }
         let tempName=addNum2name(name.value);
         if(IsEdit.value){
-            userStore.userlist.splice(curtIndex.value,1)
+            userStore.userlist.splice(curtIndex.value,1);
             tempName=name.value;
         }
 
@@ -92,24 +134,53 @@
             return;
         }
 
-        userStore.userlist.unshift=({
+        userStore.userlist.unshift({
             id:stuNum.value,
             name:tempName,
             age:age.value
         });
         showFlag.value=false;
+        // console.log(userStore.userlist)
         // IsEdit.value=false;
         // alert(`新增同学：学号：${stuNum.value},姓名：${name.value},年龄:${age.value}`)
     }
+    const columns = [
+        {
+            title: '序号',
+            key: 'no',
+            dataIndex: 'no',
+        },
+        {
+            title: '学号',
+            key: 'id',
+            dataIndex: 'id',
+        },
+        {
+            title: '姓名',
+            dataIndex: 'name',
+            key: 'name',
+        },
+        {
+            title: '年龄',
+            dataIndex: 'age',
+            key: 'age',
+        },
+        {
+            title: '操作',
+            dataIndex: 'action',
+            key: 'action',
+            width:358
+        },
+    ];
 </script>
 <template>
     <div class="list-componet">
-        <h1 class="h-16 text-xl text-center">list</h1>
+        <h1>list</h1>
         <div class="tool-bar">
             <a-button class="add-btn" type="primary" @click="showFlag=true" >新增</a-button>
             <!-- <a-button type="primary" @click="showModal" class="add-btn">新增</a-button> -->
         </div>
-        <ul>
+        <!-- <ul>
             <li>
                 <span class="number">序号</span>
                 <span class="stuID">学号</span>
@@ -129,89 +200,67 @@
                 </div>
             </li>
             
-        </ul>
+        </ul> -->
         <div>
             <a-modal v-model:open="showFlag" class="pop-blank" :title="`${IsEdit? '编辑':'新增'}信息`" 
             ok-text="确认" 
             cancel-text="取消" 
             @ok="submitFn">
+            <a-form
+                :model="formState"
+                name="basic"
+                :label-col="{ span: 8 }"
+                :wrapper-col="{ span: 16 }"
+                autocomplete="off"
+                @finish="onFinish"
+                @finishFailed="onFinishFailed"
+            >
 
-                    <span>学号</span>
-                    <a-tooltip :trigger="['focus']" placement="topLeft" overlay-class-name="numeric-input">
-                        <!-- <template #title>
-                        <span >{{ stuNum }}</span>
-                        </template> -->
-
-                        <a-input
-                        v-model:value="stuNum"
-                        placeholder="Input a number"
-                        style="width: 100%;"
-                        />
-                    </a-tooltip>
-                    
-                    <span>姓名</span>
+                    <a-form-item
+                    label="学号"
+                    name="stuNum"
+                    :rules="[{ required: true, message: '请输入学号!' }]"
+                    >
+                    <a-input
+                    v-model:value="stuNum"
+                    placeholder="Input a number"
+                    style="width: 100%;"
+                    />
+                </a-form-item>
+                <!-- </a-tooltip> -->
+                <a-form-item
+                    label="姓名"
+                    name="name"
+                    :rules="[{ required: true, message: '请输入姓名!' }]"
+                >
                     <a-input v-model:value="name" placeholder="请输入姓名" style="width: 100%;">
-                        
+                    
                     </a-input>
+                </a-form-item>
 
-                    <span>年龄</span>
+                <a-form-item
+                    label="年龄"
+                    name="age"
+                    :rules="[{ required: true, message: '请输入年龄!' }]"
+                >
                     <div>
                         <a-input-number placeholder="请输入年龄" v-model:value="age" :min="16" :max="30" style="width: 100%;"/>
                     </div>
-
+                </a-form-item>
+            </a-form>
             </a-modal>
         </div>
-        <!-- <a-table :columns="columns" :data-source="userlist">
-            <template #headerCell="{ column }">
-            <template v-if="column.key === 'id'">
-                <span>
-                <smile-outlined />
-                序号
-                </span>
+        <a-table :columns="columns" :data-source="studentlist">
+            <template #bodyCell="{column,record}">
+                <template v-if="column.key === 'action'">
+                    <a-space>
+                        <a-button danger ghost @click="delbtn(record)">删除</a-button>
+                        <a-button @click="editbtn(record)">修改</a-button>
+                        <a-button >搜索</a-button>
+                    </a-space>
+                </template>
             </template>
-            </template>
-            
-            <template #bodyCell="{ column, record }">
-            <template v-if="column.key === 'id'">
-                <a>
-                {{ record.id }}
-                </a>
-            </template>
-            <template v-if="column.key === 'stuNum'">
-                <a>
-                {{ record.name }}
-                </a>
-            </template>
-            <template v-if="column.key === 'name'">
-                <a>
-                {{ record.name }}
-                </a>
-            </template>
-            <template v-else-if="column.key === 'tags'">
-                <span>
-                <a-tag
-                    v-for="tag in record.tags"
-                    :key="tag"
-                    :color="tag === 'loser' ? 'volcano' : tag.length > 5 ? 'geekblue' : 'green'"
-                >
-                    {{ tag.toUpperCase() }}
-                </a-tag>
-                </span>
-            </template>
-            <template v-else-if="column.key === 'action'">
-                <span>
-                <a>Invite 一 {{ record.name }}</a>
-                <a-divider type="vertical" />
-                <a>Delete</a>
-                <a-divider type="vertical" />
-                <a class="ant-dropdown-link">
-                    More actions
-                    <down-outlined />
-                </a>
-                </span>
-            </template>
-            </template>
-        </a-table> -->
+        </a-table>
         <!-- <div class="pop-blank" v-if="showFlag">
             <h2>{{IsEdit? '编辑':'新增'}}信息</h2>
             <div class="blank-body">
@@ -233,13 +282,16 @@
         </div> -->
     
     </div>
+    <div ref="chart" class="base-chart-box">子组件</div>
 </template>
-<style scoped>
-.numeric-input .ant-tooltip-inner {
-  min-width: 32px;
-  min-height: 37px;
-}
 
+<style scoped>
+.base-chart-box {
+  width: 400px;
+  height: 300px;
+  border: 3px solid #000;
+  border-radius: 6px;
+}
 .numeric-input .numeric-input-title {
   font-size: 14px;
 }
