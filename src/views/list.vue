@@ -2,24 +2,18 @@
     import { reactive,ref} from 'vue';
     import { storeToRefs } from 'pinia';
     import { useUserStore } from '../store/user';
-    
+    // import { userOutlined,InfoCircleOutlined} from '@ant-design-vue/icons-vue'
     const userStore = useUserStore();
-    const { userlist } = storeToRefs(userStore);
+    const {userlist} =storeToRefs(userStore)
     const { setuserlist }=userStore;
+    
     let showFlag=ref(false);
     let IsEdit=ref(false);//默认新增
     let stuNum=ref(0);
     let name=ref("");
     let age=ref(0);
     let curtIndex=ref(0);
-    const open = ref(false);
-    const showModal = () => {
-    open.value = true;
-    };
-    const handleOk = e => {
-    console.log(e);
-    open.value = false;
-    };
+
     const delbtn=index=>{
         userStore.userlist.splice(index,1);
     }
@@ -27,6 +21,7 @@
     const addUser=()=>{
         IsEdit.value=false;
         showFlag.value=true;
+
     }
 
     const editbtn=index=>{
@@ -35,10 +30,9 @@
         stuNum.value=item.id;
         name.value=item.name;
         age.value=item.age;
-        showModal();
-        // showFlag.value=true;
+        showFlag.value=true;
         IsEdit.value=true;
-        curtIndex=index;
+        curtIndex.value=index;
     }
     // const checkbtn=id=>{
     //     const User=userStore.userlist.find(item=>item.id==id);
@@ -60,7 +54,7 @@
         userStore.userlist.map(item =>{
             if(item.name.indexOf(name)!==-1){
                 let template=item;
-                let templatename=template.name.splice('')
+                let templatename=template.name.split('')
                 templatename.splice(0,name.length)
                 let IsStuNumCheck=IsNumber(templatename.join(''));
                 if(templatename.length===0 || IsStuNumCheck){
@@ -78,7 +72,8 @@
         return true;
     }
     
-    const submitFn=()=>{
+    const submitFn=e=>{
+        console.log(e);
         // ...是解构，把数组里的内容一个一个拿出来
         let IsStuNumCheck=IsNumber(stuNum.value);
         if(!IsStuNumCheck){
@@ -96,8 +91,7 @@
             alert("学号已存在！");
             return;
         }
-        
-        
+
         userStore.userlist.unshift=({
             id:stuNum.value,
             name:tempName,
@@ -109,12 +103,11 @@
     }
 </script>
 <template>
-<link href="./output.css" rel="stylesheet">
     <div class="list-componet">
         <h1 class="h-16 text-xl text-center">list</h1>
         <div class="tool-bar">
-            <!-- <button class="add-btn" type="primary" @click="showFlag=true">新增</button> -->
-            <a-button type="primary" @click="showModal" class="add-btn">新增</a-button>
+            <a-button class="add-btn" type="primary" @click="showFlag=true" >新增</a-button>
+            <!-- <a-button type="primary" @click="showModal" class="add-btn">新增</a-button> -->
         </div>
         <ul>
             <li>
@@ -138,21 +131,87 @@
             
         </ul>
         <div>
-            <a-modal v-model:open="open" @ok="handleOk" >
-            <h2>{{IsEdit? '编辑':'新增'}}信息</h2>
-                <div class="blank-body">
-                <div class="blank-item">
-                    <span>学号</span><input type="text" v-model="stuNum">
-                </div>
-                <div class="blank-item">
-                    <span>姓名</span><input type="text" v-model="name">
-                </div>
-                <div class="blank-item">
-                    <span>年龄</span><input type="text" v-model="age">
-                </div>
-            </div>
+            <a-modal v-model:open="showFlag" class="pop-blank" :title="`${IsEdit? '编辑':'新增'}信息`" 
+            ok-text="确认" 
+            cancel-text="取消" 
+            @ok="submitFn">
+
+                    <span>学号</span>
+                    <a-tooltip :trigger="['focus']" placement="topLeft" overlay-class-name="numeric-input">
+                        <!-- <template #title>
+                        <span >{{ stuNum }}</span>
+                        </template> -->
+
+                        <a-input
+                        v-model:value="stuNum"
+                        placeholder="Input a number"
+                        style="width: 100%;"
+                        />
+                    </a-tooltip>
+                    
+                    <span>姓名</span>
+                    <a-input v-model:value="name" placeholder="请输入姓名" style="width: 100%;">
+                        
+                    </a-input>
+
+                    <span>年龄</span>
+                    <div>
+                        <a-input-number placeholder="请输入年龄" v-model:value="age" :min="16" :max="30" style="width: 100%;"/>
+                    </div>
+
             </a-modal>
         </div>
+        <!-- <a-table :columns="columns" :data-source="userlist">
+            <template #headerCell="{ column }">
+            <template v-if="column.key === 'id'">
+                <span>
+                <smile-outlined />
+                序号
+                </span>
+            </template>
+            </template>
+            
+            <template #bodyCell="{ column, record }">
+            <template v-if="column.key === 'id'">
+                <a>
+                {{ record.id }}
+                </a>
+            </template>
+            <template v-if="column.key === 'stuNum'">
+                <a>
+                {{ record.name }}
+                </a>
+            </template>
+            <template v-if="column.key === 'name'">
+                <a>
+                {{ record.name }}
+                </a>
+            </template>
+            <template v-else-if="column.key === 'tags'">
+                <span>
+                <a-tag
+                    v-for="tag in record.tags"
+                    :key="tag"
+                    :color="tag === 'loser' ? 'volcano' : tag.length > 5 ? 'geekblue' : 'green'"
+                >
+                    {{ tag.toUpperCase() }}
+                </a-tag>
+                </span>
+            </template>
+            <template v-else-if="column.key === 'action'">
+                <span>
+                <a>Invite 一 {{ record.name }}</a>
+                <a-divider type="vertical" />
+                <a>Delete</a>
+                <a-divider type="vertical" />
+                <a class="ant-dropdown-link">
+                    More actions
+                    <down-outlined />
+                </a>
+                </span>
+            </template>
+            </template>
+        </a-table> -->
         <!-- <div class="pop-blank" v-if="showFlag">
             <h2>{{IsEdit? '编辑':'新增'}}信息</h2>
             <div class="blank-body">
@@ -176,6 +235,14 @@
     </div>
 </template>
 <style scoped>
+.numeric-input .ant-tooltip-inner {
+  min-width: 32px;
+  min-height: 37px;
+}
+
+.numeric-input .numeric-input-title {
+  font-size: 14px;
+}
 .list-componet{
     text-align: left;
 }

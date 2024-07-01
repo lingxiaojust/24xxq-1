@@ -25,7 +25,7 @@ export const useUserStore = defineStore('user', () => {
     username.value = newName;
   };
   const setuserlist = (newList) => {
-    userlist.value = newList;
+    userlist = newList;
   };
   return {
     username,
