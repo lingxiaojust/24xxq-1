@@ -1,0 +1,24 @@
+{
+  "name": "062401",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "ant-design-vue": "^4.2.3",
+    "less": "^4.2.0",
+    "pinia": "^2.1.7",
+    "vue": "^3.4.29",
+    "vue-router": "^4.4.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.8",
+    "@vitejs/plugin-vue": "^5.0.5",
+    "tailwindcss": "^3.4.4",
+    "vite": "^5.3.1"
+  }
+}
