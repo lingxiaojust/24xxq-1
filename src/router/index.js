@@ -53,7 +53,10 @@ const routes=[
         path:'/echarts',
         component:()=>import('../views/echarts.vue')
     },
-    
+    {
+        path:'/web3d',
+        component:()=>import('../views/web3d.vue')
+    },
 ]
 const router=createRouter({
     history:createWebHistory(),

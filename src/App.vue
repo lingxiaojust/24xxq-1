@@ -27,7 +27,7 @@ const id='123'
   <!-- <button @click="message='再见'">message切换</button>
   <button @click="event=>warn('event事件',event)">获取事件</button> -->
 <div class="btn">
-  <button v-for="(item,index) in ['computed','list','base','hello','form','lite','user','fa','echarts']" 
+  <button v-for="(item,index) in ['computed','list','base','hello','form','lite','user','fa','echarts','web3d']" 
   :class="{active:type==item}" @click="type=item" class="btnall"> 
     {{ item.message }}
     <RouterLink :to="`/${item}`">{{ item }}</RouterLink>

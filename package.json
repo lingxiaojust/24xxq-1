@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "ant-design-vue": "^4.2.3",
+    "babylonjs-loaders": "^7.13.1",
     "echarts": "^5.5.1",
     "less": "^4.2.0",
     "pinia": "^2.1.7",
@@ -19,6 +20,7 @@
   "devDependencies": {
     "@types/node": "^20.14.8",
     "@vitejs/plugin-vue": "^5.0.5",
+    "babylonjs": "^7.13.1",
     "tailwindcss": "^3.4.4",
     "vite": "^5.3.1"
   }

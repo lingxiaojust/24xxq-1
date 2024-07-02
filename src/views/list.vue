@@ -11,17 +11,27 @@
     let showFlag=ref(false);
     let IsEdit=ref(false);//默认新增
     let editIndex=ref(-1);
-    const formState = reactive({
-        username: '',
-        password: '',
-        remember: true,
-    });
+
     let stuNum=ref('0');
     let name=ref("");
     let age=ref(0);
     let curtIndex=ref(0);
     const chart=ref(null);
-
+    const updateChart = () => {
+    const myChart = echarts.init(chart.value);
+    myChart.setOption({
+        xAxis: {
+            data: userStore.userlist.map(item => item.name),
+        },
+        series: [
+            {
+                name: '年龄',
+                type: 'bar',
+                data: userStore.userlist.map(item => item.age),
+            },
+        ]
+    });
+};
     onMounted(()=>{
         // const myChart =echarts.init(document.querySelector('.base-chart-box'));
         const myChart=echarts.init(chart.value);
@@ -51,6 +61,7 @@
     })
     const delbtn=index=>{
         userStore.userlist.splice(index,1);
+        updateChart();
     }
 
     const addUser=()=>{
@@ -139,6 +150,7 @@
             name:tempName,
             age:age.value
         });
+        updateChart();
         showFlag.value=false;
         // console.log(userStore.userlist)
         // IsEdit.value=false;
