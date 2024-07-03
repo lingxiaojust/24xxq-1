@@ -1,6 +1,7 @@
 <script setup>
     import { reactive,ref,computed,onMounted} from 'vue';
     import { storeToRefs } from 'pinia';
+    import { UserOutlined, InfoCircleOutlined } from '@ant-design/icons-vue';
     import { useUserStore } from '../store/user';
     import * as echarts from 'echarts';
     // import { userOutlined,InfoCircleOutlined} from '@ant-design-vue/icons-vue'
@@ -18,18 +19,18 @@
     let curtIndex=ref(0);
     const chart=ref(null);
     const updateChart = () => {
-    const myChart = echarts.init(chart.value);
-    myChart.setOption({
-        xAxis: {
-            data: userStore.userlist.map(item => item.name),
-        },
-        series: [
-            {
-                name: '年龄',
-                type: 'bar',
-                data: userStore.userlist.map(item => item.age),
+        const myChart = echarts.init(chart.value);
+        myChart.setOption({
+            xAxis: {
+                data: userStore.userlist.map(item => item.name),
             },
-        ]
+            series: [
+                {
+                    name: '年龄',
+                    type: 'bar',
+                    data: userStore.userlist.map(item => item.age),
+                },
+            ]
     });
 };
     onMounted(()=>{
@@ -67,7 +68,9 @@
     const addUser=()=>{
         IsEdit.value=false;
         showFlag.value=true;
-
+        stuNum.value='';
+        name.value='';
+        age.value='';
     }
     const studentlist=computed(()=>{
         return userStore.userlist.map((item,index)=>{
@@ -78,19 +81,19 @@
         })
     })
     const editbtn=index=>{
-        const item=userStore.userlist[index];
-        // item.age=22;
-        stuNum.value=item.id;
-        name.value=item.name;
-        age.value=item.age;
-        showFlag.value=true;
-        IsEdit.value=true;
-        curtIndex.value=index;
+        IsEdit.value = true;
+        curtIndex.value = index;
+        const item = userStore.userlist[index];
+        // item.age = 22;
+        stuNum.value = item.id;
+        name.value = item.name;
+        age.value = item.age;
+        showFlag.value = true;
     }
-    // const checkbtn=id=>{
-    //     const User=userStore.userlist.find(item=>item.id==id);
-    //     alert(User.name)
-    // }
+    const checkbtn=id=>{
+        const User=userStore.userlist.find(item=>item.id===id);
+        alert(User.name)
+    }
     
     const checkList=(Inputstunum)=>{
         for(let index=0;index<userStore.userlist.length;index++){
@@ -107,7 +110,7 @@
         userStore.userlist.map(item =>{
             if(item.name.indexOf(name)!==-1){
                 let tempItem=item
-                let tempItemName=tempItem.userName.split('')
+                let tempItemName=tempItem.name.split('')
                 tempItemName.splice(0,name.length)
                 let IsStuNumCheck=IsNumber(tempItemName.join(''));
                 if(tempItemName.length===0 || IsStuNumCheck){
@@ -125,8 +128,7 @@
         return true;
     }
     
-    const submitFn=e=>{
-        console.log(e);
+    const submitFn=()=>{
         // ...是解构，把数组里的内容一个一个拿出来
         let IsStuNumCheck=IsNumber(stuNum.value);
         if(!IsStuNumCheck){
@@ -184,12 +186,13 @@
             width:358
         },
     ];
+    
 </script>
 <template>
     <div class="list-componet">
         <h1>list</h1>
         <div class="tool-bar">
-            <a-button class="add-btn" type="primary" @click="showFlag=true" >新增</a-button>
+            <a-button class="add-btn" type="primary" @click="addUser" >新增</a-button>
             <!-- <a-button type="primary" @click="showModal" class="add-btn">新增</a-button> -->
         </div>
         <!-- <ul>
@@ -219,7 +222,6 @@
             cancel-text="取消" 
             @ok="submitFn">
             <a-form
-                :model="formState"
                 name="basic"
                 :label-col="{ span: 8 }"
                 :wrapper-col="{ span: 16 }"
@@ -231,11 +233,10 @@
                     <a-form-item
                     label="学号"
                     name="stuNum"
-                    :rules="[{ required: true, message: '请输入学号!' }]"
                     >
                     <a-input
                     v-model:value="stuNum"
-                    placeholder="Input a number"
+                    placeholder="输入学号"
                     style="width: 100%;"
                     />
                 </a-form-item>
@@ -243,7 +244,6 @@
                 <a-form-item
                     label="姓名"
                     name="name"
-                    :rules="[{ required: true, message: '请输入姓名!' }]"
                 >
                     <a-input v-model:value="name" placeholder="请输入姓名" style="width: 100%;">
                     
@@ -253,7 +253,6 @@
                 <a-form-item
                     label="年龄"
                     name="age"
-                    :rules="[{ required: true, message: '请输入年龄!' }]"
                 >
                     <div>
                         <a-input-number placeholder="请输入年龄" v-model:value="age" :min="16" :max="30" style="width: 100%;"/>
@@ -268,7 +267,7 @@
                     <a-space>
                         <a-button danger ghost @click="delbtn(record)">删除</a-button>
                         <a-button @click="editbtn(record)">修改</a-button>
-                        <a-button >搜索</a-button>
+                        <a-button @click="checkbtn(record.id)">搜索</a-button>
                     </a-space>
                 </template>
             </template>
@@ -294,15 +293,24 @@
         </div> -->
     
     </div>
-    <div ref="chart" class="base-chart-box">子组件</div>
+    <div class="charts">
+        <div ref="chart" class="base-chart-box"></div>
+    </div>
+    
 </template>
 
 <style scoped>
+.charts{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
 .base-chart-box {
   width: 400px;
   height: 300px;
   border: 3px solid #000;
   border-radius: 6px;
+  
 }
 .numeric-input .numeric-input-title {
   font-size: 14px;
