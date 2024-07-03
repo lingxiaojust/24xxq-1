@@ -53,6 +53,7 @@
             {
             name: '年龄',
             type: 'bar',
+            color:'#fffffff',
             data: userStore.userlist.map(item=>{
                 return item.age;
             }),
@@ -190,7 +191,7 @@
 </script>
 <template>
     <div class="list-componet">
-        <h1>list</h1>
+        <h1>图书馆进馆名单</h1>
         <div class="tool-bar">
             <a-button class="add-btn" type="primary" @click="addUser" >新增</a-button>
             <!-- <a-button type="primary" @click="showModal" class="add-btn">新增</a-button> -->
