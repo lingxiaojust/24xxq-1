@@ -262,11 +262,15 @@
             </a-modal>
         </div>
         <a-table :columns="columns" :data-source="studentlist">
-            <template #bodyCell="{column,record}">
+            <template #bodyCell="{column,record,index}">
+                <template v-if="column.key === 'index'">
+                    <a>{{ index+1 }}
+                    </a>
+                </template>
                 <template v-if="column.key === 'action'">
                     <a-space>
                         <a-button danger ghost @click="delbtn(record)">删除</a-button>
-                        <a-button @click="editbtn(record)">修改</a-button>
+                        <a-button @click="editbtn(index)">修改</a-button>
                         <a-button @click="checkbtn(record.id)">搜索</a-button>
                     </a-space>
                 </template>
